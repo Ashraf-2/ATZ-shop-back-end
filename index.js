@@ -33,11 +33,17 @@ async function run() {
     // Send a ping to confirm a successful connection
     const eCommerceCollection = client.db("eCommerceDB");
     const productCL = eCommerceCollection.collection('products');
-    const sliderCL = eCommerceCollection.collection('sliderImage')
     const BrandCL = eCommerceCollection.collection('Brands');
     const userCL = eCommerceCollection.collection('users');
+    const CartCL = eCommerceCollection.collection('cart');
 
-
+    //brand
+    app.get('/brands', async (req, res) => {
+      const cursor = BrandCL.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+    
 
     //products related CRUD operations
     app.get('/products', async (req, res) => {
@@ -45,16 +51,11 @@ async function run() {
       const result = await cursor.toArray();
       res.send(result);
     })
-    app.get('/brands', async (req, res) => {
-      const cursor = BrandCL.find();
-      const result = await cursor.toArray();
-      res.send(result);
-    })
 
-    //branded-slider related crud operation
-    app.get('/sliderImage', async (req, res) => {
-      const cursor = sliderCL.find();
-      const result = await cursor.toArray();
+    app.get('/products/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await productCL.findOne(query);  //cl modiefed
       res.send(result);
     })
 
@@ -64,6 +65,44 @@ async function run() {
       const result = await productCL.insertOne(newProduct);
       res.send(result);
     })
+
+    app.put('/products/:id',async(req,res) => {
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)}
+      const options = {upsert: true};
+      const updatedProduct = req.body;
+
+      const product1 = {
+        $set: {
+          prod_name:updatedProduct.prod_name,
+          rating:updatedProduct.rating,
+          price:updatedProduct.price,
+          description:updatedProduct.description,
+          photo_url:updatedProduct.photo_url, 
+          brand_name:updatedProduct.brand_name, 
+          prod_type:updatedProduct.prod_type
+        }
+      }
+
+      const result  = await productCL.updateOne(filter,product1,options)
+      res.send(result);
+    })
+
+    //cartings related crud operations
+    app.get('/cart', async (req, res) => {
+      const cursor = CartCL.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+    app.post('/cart', async (req, res) => {
+      const newProduct = req.body;
+      console.log(newProduct);
+      const result = await CartCL.insertOne(newProduct);
+      res.send(result);
+    })
+
+
+
 
 
     //users related CRUD operations
