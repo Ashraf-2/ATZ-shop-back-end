@@ -29,7 +29,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     // Send a ping to confirm a successful connection
     const eCommerceCollection = client.db("eCommerceDB");
     const productCL = eCommerceCollection.collection('products');
@@ -98,6 +98,15 @@ async function run() {
       const newProduct = req.body;
       console.log(newProduct);
       const result = await CartCL.insertOne(newProduct);
+      res.send(result);
+    })
+
+
+    //to delete => delete
+    app.delete('/cart/:id',async(req,res)=> {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await CartCL.deleteOne(query);
       res.send(result);
     })
 
